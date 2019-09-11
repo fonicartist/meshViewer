@@ -1,1 +1,2 @@
 # meshViewer
+A simple mesh viewer for .obj files. Starts out with a simple example mesh of an inverted pyramid. Will load the .obj file's mesh when drag and dropped into the window. Additional .obj files dragged in are added to the existing mesh and impact performance so it is recommended to reload the program if you want to view another mesh. No input validation was written for the program so only use .obj files. Written with the Openframeworks api.
