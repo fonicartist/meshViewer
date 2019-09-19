@@ -3,36 +3,9 @@
 // by Victor La
 #pragma once
 #include "ofMain.h"
+#include "mesh.h"
 #include <iostream>
 #include <fstream>
-
-class Triangle {
-public:
-	int index[3];
-	Triangle(int x, int y, int z) {
-		index[0] = x;
-		index[1] = y;
-		index[2] = z;
-	};
-	void draw(vector<glm::vec3> verts) {
-		// Draw line between vertex 0 and 1
-		ofDrawLine(verts[index[0]], verts[index[1]]);
-		// Draw line between vertex 1 and 2
-		ofDrawLine(verts[index[1]], verts[index[2]]);
-		// Draw line between vertex 2 and 0
-		ofDrawLine(verts[index[2]], verts[index[0]]);
-	};
-};
-
-class Mesh {
-public:
-	vector<glm::vec3> vertices;
-	vector<Triangle> triangles;
-	void draw() {
-		for (int i = 0; i < triangles.size(); i++)
-			triangles[i].draw(vertices);
-	};
-};
 
 class ofApp : public ofBaseApp{
 
@@ -57,17 +30,20 @@ class ofApp : public ofBaseApp{
 		// Boolean flags
 		bool bTestMeshVisible = true;
 		bool bObjLoaded = false;
+		bool bSelected = false;
 
 		// Camera properties
-		enum CurrentCamera { easy, front };
+		enum CurrentCamera { easy, front, right, left };
 		int _currentCamera;
 		ofEasyCam cam;
 		ofCamera *theCam;
-		ofCamera frontCam;
+		ofCamera frontCam, rightCam, leftCam;
 		void changeCamera();
 
 		// Mesh objects
 		Mesh objMesh,
 			 testMesh;
+
+		glm::vec3 intersectPoint;
 		
 };

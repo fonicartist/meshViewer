@@ -3,7 +3,7 @@
 
 //========================================================================
 int main( ){
-	ofSetupOpenGL(1024,768,OF_WINDOW);			// <-------- setup the GL context
+	ofSetupOpenGL(1366,768,OF_WINDOW);			// <-------- setup the GL context
 	ofSetWindowTitle("Mesh Viewer");
 	// this kicks off the running of my app
 	// can be OF_WINDOW or OF_FULLSCREEN

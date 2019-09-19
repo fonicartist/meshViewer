@@ -197,6 +197,9 @@
     <ClInclude Include="..\..\..\addons\ofxAssimpModelLoader\libs\assimp\include\assimp\version.h">
       <Filter>addons\ofxAssimpModelLoader\libs\assimp\include\assimp</Filter>
     </ClInclude>
+    <ClInclude Include="src\mesh.h">
+      <Filter>src</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="icon.rc" />

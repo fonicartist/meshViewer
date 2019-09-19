@@ -8,7 +8,7 @@ void ofApp::setup(){
 	
 	// Setup cameras
 	cam.setDistance(10);
-	cam.setPosition(glm::vec3(0, 10, 50));
+	cam.setPosition(glm::vec3(0, 0, 20));
 	cam.setNearClip(.1);
 	cam.setFov(65.5);   // approx equivalent to 28mm in 35mm format
 	cam.disableMouseInput();	// default camera is the wide shot
@@ -17,18 +17,28 @@ void ofApp::setup(){
 		// Camera 2, a still camera looking from the front
 	frontCam.setNearClip(.1);
 	frontCam.setFov(70);
-	frontCam.setPosition(glm::vec3(0, 10, 100));
-	frontCam.lookAt(glm::vec3(0, 0, 0));
+	frontCam.setPosition(glm::vec3(0, 5, 15));
+	frontCam.lookAt(glm::vec3(0, 5, 0));
+		// Camera 3, looks at the origin from the right side
+	rightCam.setNearClip(.1);
+	rightCam.setFov(70);
+	rightCam.setPosition(glm::vec3(15, 10, 0));
+	rightCam.lookAt(glm::vec3(0, 5, 0));
+		// Camera 4, looks at the origin from the left side
+	leftCam.setNearClip(.1);
+	leftCam.setFov(70);
+	leftCam.setPosition(glm::vec3(-15, 10, 0));
+	leftCam.lookAt(glm::vec3(0, 5, 0));
 
 	// Set up test geometry, an inverted pyramid with a triangular base
-	testMesh.vertices.push_back(glm::vec3(-20, 20, 20));
-	testMesh.vertices.push_back(glm::vec3(20, 20, 20));
-	testMesh.vertices.push_back(glm::vec3(0, 20, -20));
-	testMesh.vertices.push_back(glm::vec3(0, -20, 0));
-	testMesh.triangles.push_back(Triangle(0, 1, 2));
-	testMesh.triangles.push_back(Triangle(1, 2, 3));
-	testMesh.triangles.push_back(Triangle(2, 0, 3));
-	testMesh.triangles.push_back(Triangle(0, 1, 3));
+	testMesh.vertices.push_back(glm::vec3(-6, 6, 6));
+	testMesh.vertices.push_back(glm::vec3(6, 6, 6));
+	testMesh.vertices.push_back(glm::vec3(0, 6, -6));
+	testMesh.vertices.push_back(glm::vec3(0, -6, 0));
+	testMesh.faces.push_back(Face(0, 1, 2));
+	testMesh.faces.push_back(Face(1, 2, 3));
+	testMesh.faces.push_back(Face(2, 0, 3));
+	testMesh.faces.push_back(Face(0, 1, 3));
 	
 }
 
@@ -39,6 +49,10 @@ void ofApp::update(){
 	case easy: theCam = &cam;
 		break;
 	case front: theCam = &frontCam;
+		break;
+	case right: theCam = &rightCam;
+		break;
+	case left: theCam = &leftCam;
 		break;
 	default:
 		break;
@@ -62,10 +76,21 @@ void ofApp::draw(){
 		ofSetColor(ofColor::white);
 
 		// Draw test Mesh if enabled and another object hasn't been loaded yet
-		if (bTestMeshVisible && !bObjLoaded)
-			testMesh.draw();
+		if (bTestMeshVisible && !bObjLoaded) {
+			// testMesh.draw();
+			// Draw sphere
+			ofNoFill();
+			ofDrawSphere(glm::vec3(.5, .5, .5), 1);
+		}
 		else if (bObjLoaded)
 			objMesh.draw();
+
+		// Draw selected vertex
+		if (bSelected) {
+			ofSetColor(ofColor::red);
+			ofFill();
+			ofDrawSphere(intersectPoint, .05);
+		}
 
 	// End drawing in the camera
 	ofPopMatrix();
@@ -149,6 +174,24 @@ void ofApp::mouseDragged(int x, int y, int button){
 //--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button){
 
+	glm::vec3 screen3dPoint = theCam->screenToWorld(glm::vec3(x, y, 0));
+	glm::vec3 rayOrigin = theCam->getPosition();
+	glm::vec3 rayDir = glm::normalize(screen3dPoint - rayOrigin);
+	glm::vec3 intersectPos, intersectNormal;
+
+	bool bInteresects = glm::intersectRaySphere(rayOrigin, rayDir, glm::vec3(.5, .5, .5), 1, 
+											   intersectPoint, intersectNormal);
+
+	if (bInteresects) {
+		cout << "Hit!" << endl;
+		bSelected = true;
+	}
+	else {
+		cout << "Missed!" << endl;
+		bSelected = false;
+	}
+
+	cout << "3D screen position: " << screen3dPoint << endl;
 }
 
 //--------------------------------------------------------------
@@ -181,7 +224,8 @@ void ofApp::dragEvent(ofDragInfo dragInfo){
 
 	//cout << "Drag event called" << endl;
 
-	string line, val, xstr, ystr, zstr;
+	bool isQuad = false;
+	string line, val, xstr, ystr, zstr, wstr;
 	int verts = 0,
 		faces = 0;
 
@@ -193,11 +237,11 @@ void ofApp::dragEvent(ofDragInfo dragInfo){
 	while (getline(myfile, line)) {
 
 		stringstream ss(line);
-		ss >> val >> xstr >> ystr >> zstr;
+		ss >> val >> xstr >> ystr >> zstr >> wstr;
 			
 		// Read in vertices
 		if (val.substr(0, val.find(' ')) == "v") {
-			float x = stof(xstr), 
+			float x = stof(xstr),
 				  y = stof(ystr),
 				  z = stof(zstr);
 			//cout << "Pushing vertex (" << x << ", " << y << ", " << z << ")\n";
@@ -208,10 +252,16 @@ void ofApp::dragEvent(ofDragInfo dragInfo){
 		else if (val[0] == 'f') {
 			int x = stoi(xstr.substr(0, xstr.find('/'))) - 1,
 				y = stoi(ystr.substr(0, ystr.find('/'))) - 1,
-				z = stoi(zstr.substr(0, zstr.find('/'))) - 1;
+				z = stoi(zstr.substr(0, zstr.find('/'))) - 1,
+				w;
+			if (!wstr.empty()) {
+				w = stoi(wstr.substr(0, wstr.find('/'))) - 1;
+				objMesh.faces.push_back(Face(x, y, z, w));
+			}
+			else
+				objMesh.faces.push_back(Face(x, y, z));
 			//cout << "Pushing Triangle (" << x << ", " << y << ", " << z << ")\n";
 			faces++;
-			objMesh.triangles.push_back(Triangle(x, y, z));
 		}
 		
 	}
@@ -228,6 +278,6 @@ void ofApp::dragEvent(ofDragInfo dragInfo){
 //
 void ofApp::changeCamera() {
 	_currentCamera++;
-	if (_currentCamera == 2)
+	if (_currentCamera == 4)
 		_currentCamera = 0;
 }
