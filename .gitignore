@@ -38,7 +38,11 @@
 # Ignore bin folder but not data
 */bin/*
 !*/bin/data/
+!*/bin/data/geo/*.obj
 
 # Ignore Visual Studio Files
 obj/*
 .vs/*
+
+# Ignore zip folders I submit for class
+*.zip

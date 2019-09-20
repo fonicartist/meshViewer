@@ -89,7 +89,7 @@ void ofApp::draw(){
 		if (bSelected) {
 			ofSetColor(ofColor::red);
 			ofFill();
-			ofDrawSphere(intersectPoint, .05);
+			ofDrawSphere(intersectPoint, .04);
 		}
 
 	// End drawing in the camera
@@ -174,13 +174,20 @@ void ofApp::mouseDragged(int x, int y, int button){
 //--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button){
 
+	bool bInteresects = false;
+
 	glm::vec3 screen3dPoint = theCam->screenToWorld(glm::vec3(x, y, 0));
 	glm::vec3 rayOrigin = theCam->getPosition();
 	glm::vec3 rayDir = glm::normalize(screen3dPoint - rayOrigin);
 	glm::vec3 intersectPos, intersectNormal;
 
-	bool bInteresects = glm::intersectRaySphere(rayOrigin, rayDir, glm::vec3(.5, .5, .5), 1, 
+	// Check intersection with sphere if OBJ file is not loaded
+	if (!bObjLoaded)
+		bInteresects = glm::intersectRaySphere(rayOrigin, rayDir, glm::vec3(.5, .5, .5), 1,
 											   intersectPoint, intersectNormal);
+	// Check intersection if loaded obj file
+	else
+		bInteresects = objMesh.intersects(rayOrigin, rayDir, intersectPoint, intersectNormal);
 
 	if (bInteresects) {
 		cout << "Hit!" << endl;
@@ -222,7 +229,7 @@ void ofApp::gotMessage(ofMessage msg){
 //--------------------------------------------------------------
 void ofApp::dragEvent(ofDragInfo dragInfo){ 
 
-	//cout << "Drag event called" << endl;
+	objMesh = Mesh();
 
 	bool isQuad = false;
 	string line, val, xstr, ystr, zstr, wstr;
@@ -270,7 +277,7 @@ void ofApp::dragEvent(ofDragInfo dragInfo){
 
 	cout << "Number of vertices: " << verts << endl;
 	cout << "Number of faces: " << faces << endl;
-	cout << "Size of model loaded: " << file.tellg() / 1000 << "kb" << endl;
+	cout << "Size of model loaded: " << sizeof(objMesh) / 1000.0 << "kb" << endl;
 
 }
 

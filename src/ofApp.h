@@ -1,4 +1,4 @@
-// Headers for the OF application, mesh object, and triangle class
+// Headers for the OF application
 //
 // by Victor La
 #pragma once
